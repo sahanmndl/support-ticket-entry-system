@@ -24,6 +24,7 @@ import axios from "axios";
 import {DateTimePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import {BASE_API_URL} from "../../utils/constants";
 
 const SupportTicketPage = () => {
 
@@ -45,7 +46,7 @@ const SupportTicketPage = () => {
 
     const assignAgentToTicket = async () => {
         try {
-            const response = await axios.get(`http://localhost:8008/api/support-agents`)
+            const response = await axios.get(`${BASE_API_URL}/support-agents`)
             const supportAgents = response.data.supportAgents
             setSupportAgents(supportAgents)
             let assignedAgentEmail = null
@@ -82,7 +83,7 @@ const SupportTicketPage = () => {
                     dateCreated: dateCreated.toDate()
                 }
                 console.log(requestBody)
-                await axios.post(`http://localhost:8008/api/support-tickets`, requestBody)
+                await axios.post(`${BASE_API_URL}/support-tickets`, requestBody)
                     .then((response) => {
                         setOpen(true)
                         setAlertMessage("New support ticket created!")
@@ -111,7 +112,7 @@ const SupportTicketPage = () => {
 
     const fetchAllSupportTickets = async () => {
         try {
-            await axios.get(`http://localhost:8008/api/support-tickets`)
+            await axios.get(`${BASE_API_URL}/support-tickets`)
                 .then((response) => setSupportTickets(response.data.supportTickets))
                 .catch((e) => console.error(e))
         } catch (e) {
@@ -126,7 +127,7 @@ const SupportTicketPage = () => {
                 assignedTo: assignedTo,
                 resolvedOn: resolvedOn.toDate()
             }
-            await axios.put(`http://localhost:8008/api/support-tickets`, requestBody)
+            await axios.put(`${BASE_API_URL}/support-tickets`, requestBody)
                 .then((response) => {
                     setOpen(true)
                     setAlertMessage("Ticket has been resolved!")

@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import {validateSupportAgentForm} from "../../utils/formValidation";
 import axios from "axios";
+import {BASE_API_URL} from "../../utils/constants";
 
 const SupportAgentPage = () => {
 
@@ -55,7 +56,7 @@ const SupportAgentPage = () => {
                     phone: phone,
                     description: description
                 }
-                await axios.post(`http://localhost:8008/api/support-agents`, requestBody)
+                await axios.post(`${BASE_API_URL}/support-agents`, requestBody)
                     .then((response) => {
                         setEmail("")
                         setName("")
@@ -79,7 +80,7 @@ const SupportAgentPage = () => {
 
     const fetchAllSupportAgents = async () => {
         try {
-            await axios.get(`http://localhost:8008/api/support-agents`)
+            await axios.get(`${BASE_API_URL}/support-agents`)
                 .then((response) => setSupportAgents(response.data.supportAgents))
                 .catch((e) => console.error(e))
         } catch (e) {
