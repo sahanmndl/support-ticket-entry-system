@@ -16,7 +16,7 @@ app.use('/api/', supportTicketRouter)
 
 mongoose
     .connect(
-        "mongodb+srv://sahan:sahan123@cluster0.gbzkhhj.mongodb.net/?retryWrites=true&w=majority",
+        process.env.MONGODB_URL,
         {useNewUrlParser: true, useUnifiedTopology: true}
     )
     .then(() => {
