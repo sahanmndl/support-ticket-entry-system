@@ -10,6 +10,6 @@ const supportTicketRouter = express.Router()
 supportTicketRouter.get('/support-tickets', getAllSupportTickets)
 supportTicketRouter.post('/support-tickets', createSupportTicket)
 supportTicketRouter.put('/support-tickets', resolveSupportTicket)
-supportTicketRouter.delete('/support-tickets', deleteAllSupportTickets)
+//supportTicketRouter.delete('/support-tickets', deleteAllSupportTickets)
 
 export default supportTicketRouter
