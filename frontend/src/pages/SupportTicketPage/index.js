@@ -3,6 +3,7 @@ import "./styles.css";
 import {
     Alert,
     Button,
+    CircularProgress,
     Divider,
     FormControl,
     InputLabel,
@@ -39,23 +40,39 @@ const SupportTicketPage = () => {
     const [supportTickets, setSupportTickets] = useState([])
     const [status, setStatus] = useState("")
     const [loading, setLoading] = useState(false)
+    const [fetchLoading, setFetchLoading] = useState(false)
     const [open, setOpen] = useState(false)
     const [alertMessage, setAlertMessage] = useState("")
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(5)
 
+    //Automatic Round Robin assignment of agent to ticket
     const assignAgentToTicket = async () => {
         try {
             const response = await axios.get(`${BASE_API_URL}/support-agents`)
             const supportAgents = response.data.supportAgents
             setSupportAgents(supportAgents)
             let assignedAgentEmail = null
-            for (const agent of supportAgents) {
-                if (!agent.active) {
-                    assignedAgentEmail = agent.email
-                    break
+
+            //Round Robin assignment of agents
+            const lastAssignedAgentIndex = parseInt(localStorage.getItem('lastAssignedAgentIndex'))
+            if (!lastAssignedAgentIndex || lastAssignedAgentIndex < 0
+                || lastAssignedAgentIndex === supportAgents.length - 1 || lastAssignedAgentIndex >= supportAgents.length) {
+                for (const agent of supportAgents) {
+                    if (!agent.active) {
+                        assignedAgentEmail = agent.email
+                        break
+                    }
+                }
+            } else {
+                for (let i = lastAssignedAgentIndex + 1; i < supportAgents.length; i++) {
+                    if (!supportAgents[i].active) {
+                        assignedAgentEmail = supportAgents[i].email
+                        break
+                    }
                 }
             }
+
             if (assignedAgentEmail) {
                 setAssignedTo(assignedAgentEmail)
                 setStatus("Assigned")
@@ -92,6 +109,10 @@ const SupportTicketPage = () => {
                         setSeverity("")
                         setType("")
                         setStatus("")
+
+                        const index = supportAgents.findIndex((agent) => agent.email === assignedTo)
+                        localStorage.setItem('lastAssignedAgentIndex', String(index))
+
                         assignAgentToTicket()
                         fetchAllSupportTickets()
                     })
@@ -112,11 +133,14 @@ const SupportTicketPage = () => {
 
     const fetchAllSupportTickets = async () => {
         try {
+            setFetchLoading(true)
             await axios.get(`${BASE_API_URL}/support-tickets`)
                 .then((response) => setSupportTickets(response.data.supportTickets))
                 .catch((e) => console.error(e))
         } catch (e) {
             console.error(e)
+        } finally {
+            setFetchLoading(false)
         }
     }
 
@@ -275,63 +299,69 @@ const SupportTicketPage = () => {
             </Snackbar>
             <Divider flexItem/>
             <div className={'bottom-container'}>
-                <Typography
-                    style={{marginBottom: 10, fontWeight: '700', textAlign: 'center'}}
-                    variant="subtitle1"
-                >
-                    Support Tickets
-                </Typography>
-                <TableContainer component={Paper}>
-                    <Table size={'small'}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Topic</TableCell>
-                                <TableCell>Description</TableCell>
-                                <TableCell>Date Created</TableCell>
-                                <TableCell>Severity</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Assigned To</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell>Resolved On</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {supportTickets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ticket) => (
-                                <TableRow key={ticket.assignedTo}>
-                                    <TableCell>{ticket.topic}</TableCell>
-                                    <TableCell>{ticket.description}</TableCell>
-                                    <TableCell>{new Date(ticket.dateCreated).toLocaleDateString()}</TableCell>
-                                    <TableCell>{ticket.severity}</TableCell>
-                                    <TableCell>{ticket.type}</TableCell>
-                                    <TableCell>{ticket.assignedTo}</TableCell>
-                                    <TableCell>{ticket.status}</TableCell>
-                                    <TableCell>
-                                        {ticket.resolvedOn ? new Date(ticket.resolvedOn).toLocaleDateString() : (
-                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                <DateTimePicker
-                                                    slotProps={{textField: {size: 'small'}}}
-                                                    label="Resolved On"
-                                                    value={resolvedOn}
-                                                    onChange={(date) => setResolvedOn(date)}
-                                                    onAccept={() => resolveSupportTicket(ticket._id, ticket.assignedTo)}
-                                                />
-                                            </LocalizationProvider>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10]}
-                    component="div"
-                    count={supportAgents.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
+                {fetchLoading ? (
+                    <CircularProgress/>
+                ) : (
+                    <>
+                        <Typography
+                            style={{marginBottom: 10, fontWeight: '700', textAlign: 'center'}}
+                            variant="subtitle1"
+                        >
+                            Support Tickets
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table size={'small'}>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Topic</TableCell>
+                                        <TableCell>Description</TableCell>
+                                        <TableCell>Date Created</TableCell>
+                                        <TableCell>Severity</TableCell>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Assigned To</TableCell>
+                                        <TableCell>Status</TableCell>
+                                        <TableCell>Resolved On</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {supportTickets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ticket) => (
+                                        <TableRow key={ticket.assignedTo}>
+                                            <TableCell>{ticket.topic}</TableCell>
+                                            <TableCell>{ticket.description}</TableCell>
+                                            <TableCell>{new Date(ticket.dateCreated).toLocaleDateString()}</TableCell>
+                                            <TableCell>{ticket.severity}</TableCell>
+                                            <TableCell>{ticket.type}</TableCell>
+                                            <TableCell>{ticket.assignedTo}</TableCell>
+                                            <TableCell>{ticket.status}</TableCell>
+                                            <TableCell>
+                                                {ticket.resolvedOn ? new Date(ticket.resolvedOn).toLocaleDateString() : (
+                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                        <DateTimePicker
+                                                            slotProps={{textField: {size: 'small'}}}
+                                                            label="Resolved On"
+                                                            value={resolvedOn}
+                                                            onChange={(date) => setResolvedOn(date)}
+                                                            onAccept={() => resolveSupportTicket(ticket._id, ticket.assignedTo)}
+                                                        />
+                                                    </LocalizationProvider>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10]}
+                            component="div"
+                            count={supportAgents.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </>
+                )}
             </div>
         </div>
     )

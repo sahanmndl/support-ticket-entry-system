@@ -15,7 +15,7 @@ const Header = () => {
                 justifyContent: 'space-between'
             }}>
                 <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                    <label style={{fontSize: '24px', fontWeight: '700'}}>Support Entry Ticket System</label>
+                    <label style={{fontSize: '24px', fontWeight: '700'}}>Support Ticket Entry System</label>
                     <span style={{margin: "0 10px"}}>|</span>
                     <label style={{fontSize: '20px'}}>by Sahan Mondal</label>
                 </div>

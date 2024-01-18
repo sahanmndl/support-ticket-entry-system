@@ -3,6 +3,7 @@ import "./styles.css";
 import {
     Alert,
     Button,
+    CircularProgress,
     Divider,
     Paper,
     Snackbar,
@@ -28,6 +29,7 @@ const SupportAgentPage = () => {
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
     const [loading, setLoading] = useState(false)
+    const [fetchLoading, setFetchLoading] = useState(false)
     const [description, setDescription] = useState("")
     const [open, setOpen] = useState(false)
     const [alertMessage, setAlertMessage] = useState("")
@@ -80,11 +82,14 @@ const SupportAgentPage = () => {
 
     const fetchAllSupportAgents = async () => {
         try {
+            setFetchLoading(true)
             await axios.get(`${BASE_API_URL}/support-agents`)
                 .then((response) => setSupportAgents(response.data.supportAgents))
                 .catch((e) => console.error(e))
         } catch (e) {
             console.error(e)
+        } finally {
+            setFetchLoading(false)
         }
     }
 
@@ -189,45 +194,51 @@ const SupportAgentPage = () => {
             </div>
             <Divider flexItem/>
             <div className={'bottom-container'}>
-                <Typography
-                    style={{marginBottom: 10, fontWeight: '700', textAlign: 'center'}}
-                    variant="subtitle1"
-                >
-                    Support Agents
-                </Typography>
-                <TableContainer component={Paper}>
-                    <Table size={'small'}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Phone</TableCell>
-                                <TableCell>Description</TableCell>
-                                <TableCell>Active</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {supportAgents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((agent) => (
-                                <TableRow key={agent.email}>
-                                    <TableCell>{agent.email}</TableCell>
-                                    <TableCell>{agent.name}</TableCell>
-                                    <TableCell>{agent.phone}</TableCell>
-                                    <TableCell>{agent.description}</TableCell>
-                                    <TableCell>{agent.active ? "Yes" : "No"}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10]}
-                    component="div"
-                    count={supportAgents.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
+                {fetchLoading ? (
+                    <CircularProgress/>
+                ) : (
+                    <>
+                        <Typography
+                            style={{marginBottom: 10, fontWeight: '700', textAlign: 'center'}}
+                            variant="subtitle1"
+                        >
+                            Support Agents
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table size={'small'}>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Email</TableCell>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Phone</TableCell>
+                                        <TableCell>Description</TableCell>
+                                        <TableCell>Active</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {supportAgents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((agent) => (
+                                        <TableRow key={agent.email}>
+                                            <TableCell>{agent.email}</TableCell>
+                                            <TableCell>{agent.name}</TableCell>
+                                            <TableCell>{agent.phone}</TableCell>
+                                            <TableCell>{agent.description}</TableCell>
+                                            <TableCell>{agent.active ? "Yes" : "No"}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10]}
+                            component="div"
+                            count={supportAgents.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </>
+                )}
             </div>
         </div>
     )
