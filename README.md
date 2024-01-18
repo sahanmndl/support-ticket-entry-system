@@ -9,6 +9,10 @@ Create new support tickets and agents; Assign agents to any ticket and resolve t
 - Automatically assign agent to a ticket (in Round Robin way) or can manually assign any agent
 - Resolve the ticket and free that agent
 
+## Demo
+
+https://github.com/sahanmndl/support-ticket-entry-system/assets/76529959/ac6e33fa-3653-43c3-811b-b76ca7c7c657
+
 ## Installation & Setup
 
 1. Clone the repository:
@@ -46,10 +50,5 @@ npm start
 cd backend
 nodemon index.js
 ```
-
-## Demo
-
-
-https://github.com/sahanmndl/support-ticket-entry-system/assets/76529959/ac6e33fa-3653-43c3-811b-b76ca7c7c657
 
 
